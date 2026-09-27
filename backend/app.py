@@ -1,3 +1,4 @@
+import os
 import pickle
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Path, Query, HTTPException
@@ -10,6 +11,10 @@ import pandas as pd
 from dotenv import load_dotenv
 
 load_dotenv()
+
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "")
+DEPLOYMENT_MODE = os.getenv("DEPLOYMENT_MODE", "dev")
+LOCALHOST_FRONTEND_URL = os.getenv("LOCALHOST_FRONTEND_URL", "http://localhost:5173")
 
 # On Startup event to load pickled data
 @asynccontextmanager
@@ -36,8 +41,7 @@ app = FastAPI(title="Movie Recommendation System", version='1.0', lifespan=lifes
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
+        LOCALHOST_FRONTEND_URL if DEPLOYMENT_MODE == "dev" else ALLOWED_ORIGINS.split(",") or "*"
     ],
     allow_credentials=True,
     allow_methods=["*"],
